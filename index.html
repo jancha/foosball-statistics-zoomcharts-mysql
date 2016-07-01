@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <title>USD/GBP historical rates</title>
+    <script src="zc/zoomcharts.js"></script>
+</head>
+<body>
+    <p>
+        Sample integration of:
+        MySQL + PHP + ZoomCharts + Agile Data
+    </p>
+<div id="demo"></div>
+<script>
+    var t = new TimeChart({
+        container: document.getElementById("demo"),
+        title: {
+            text: "USD/GBP rate"
+        },
+        data:
+        {
+            units:["y","m","d"],
+            url: "service.php",
+        },
+        series:
+        [
+            {
+                id: "bid",
+                data: {index: 1, aggregation: "min"},
+                name: "bid",
+                type: "line",
+                style: {lineColor: "limegreen", lineWidth: 2, smoothing: true,
+                    marker: {shape: "circle", width: 5}}
+            },
+            {
+                id: "ask",
+                data: {index: 2, aggregation: "max"},
+                name: "ask",
+                type: "line",
+                style: {lineColor: "red", lineWidth: 2, smoothing: true,
+                    marker: {shape: "circle", width: 5}}
+            }
+        ],
+        valueAxisDefault: {
+            zeroLine: "floating",
+            scaleAdjustmentTolerance: 0.2
+        },
+        info: {
+            valueFormatterFunction: function(val, s){
+                if (s.id == "bid"){
+                    return val ? (val.min.toFixed(4)) : "No data";
+                } else {
+                    return val ? (val.max.toFixed(4)) : "No data";
+                }
+            }
+        }    
+    });
+</script>
+

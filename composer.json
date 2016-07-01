@@ -1,0 +1,12 @@
+{
+    "name": "jv/mysql-zc-demo",
+    "require": {
+        "atk4/data": "dev-feature/implement-expressions"
+    },
+    "authors": [
+        {
+            "name": "Janis",
+            "email": "janis@zoomcharts.com"
+        }
+    ]
+}
