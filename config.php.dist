@@ -1,0 +1,5 @@
+<?php
+
+$config["db"]["dsn"] = "mysql:host=localhost;dbname=test";
+$config["db"]["user"] = "root";
+$config["db"]["pass"] = "root";

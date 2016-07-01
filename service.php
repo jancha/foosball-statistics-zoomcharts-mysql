@@ -1,6 +1,20 @@
 <?php
 
-include "base.php";
+include "vendor/autoload.php";
+include "config.php";
+
+$db = new atk4\data\Persistence_SQL($config["db"]["dsn"], $config["db"]["user"], $config["db"]["pass"]);
+
+class Model_Rate extends atk4\data\Model {
+    public $table = "rate";
+    function init(){
+        parent::init();
+        $this->addField("dat");
+        $this->addField("bid");
+        $this->addField("ask");
+    }
+}
+
 $m = new Model_Rate($db);
 /*
  * Handle Data request by TimeChart
