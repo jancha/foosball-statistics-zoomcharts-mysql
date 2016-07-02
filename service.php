@@ -26,7 +26,10 @@ if (isset($_REQUEST["unit"])){
     $to = isset($_REQUEST["to"])?$_REQUEST["to"]:null;
 
     $a = $m->action('select')->order('dat', 'asc');
-    
+    if ($unit != "d"){
+        $a->field("min(bid) as bid");
+        $a->field("max(ask) as ask");
+    }
     if ($unit == "y"){
         $a->group($a->expr("date_format(dat, '%Y')"));
     } else if ($unit == "m"){
