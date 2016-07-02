@@ -3,20 +3,27 @@
 <html lang="en">
 <head>
     <meta charset="utf-8" />
-    <title>USD/GBP historical rates</title>
-    <script src="zc/zoomcharts.js"></script>
+    <title>USD/GBP historical exchange rates analytics - using ZoomCharts and Agile Data</title>
+    <!--script src="zc/zoomcharts.js"></script>//-->
+    <script src="zc-dev/zoomcharts.js"></script>
 </head>
 <body>
+    <h1>USD/GBP exchange rates analytics</h1>
+    <h2>Showcase of ZoomCharts + Agile Data (PHP&amp;MySQL)</h2>
     <p>
-        Sample integration of:
-        MySQL + PHP + ZoomCharts + Agile Data
-    </p>
+        View source: <a
+            href="https://github.com/jancha/mysql-php-agiledata-zoomcharts">GitHub</a><br/>
+        Learn more about the libraries:<br/>
+        <a href="https://zoomcharts.com">ZoomCharts</a><br />
+        <a href="https://github.com/atk4/data">Agile Data</a><br />
+        </p>
+    <p>Hint: click/swipe/pinch chart to explore the rates</p>
 <div id="demo"></div>
 <script>
     var t = new TimeChart({
         container: document.getElementById("demo"),
         title: {
-            text: "USD/GBP rate"
+            text: "USD/GBP exchange rates"
         },
         data:
         {
@@ -54,7 +61,14 @@
                     return val ? (val.max.toFixed(4)) : "No data";
                 }
             }
-        }    
+        },
+        area: {
+            displayUnits: [
+                {unit: "1 y", name: "year"},
+                {unit: "1 M", name: "month"},
+                {unit: "1 d", name: "day"}
+            ]
+        }
     });
 </script>
 
