@@ -5,39 +5,59 @@ include "config.php";
 
 $db = new atk4\data\Persistence_SQL($config["db"]["dsn"], $config["db"]["user"], $config["db"]["pass"]);
 
-class Model_Rate extends atk4\data\Model {
-    public $table = "rate";
+class Model_Result extends atk4\data\Model {
+    public $table = "result";
     function init(){
         parent::init();
-        $this->addField("dat");
-        $this->addField("bid");
-        $this->addField("ask");
+        $this->addField("player_id");
+        $this->addField("game_id");
+        $this->addField("win");
+        $this->addField("color");
+        $this->addField("dts");
+    }
+}
+class Model_Player extends atk4\data\Model {
+    public $table = "player";
+    function init(){
+        parent::init();
+        $this->addField("name");
     }
 }
 
-$m = new Model_Rate($db);
+class Model_Game extends atk4\data\Model {
+    public $table = "game";
+    function init(){
+        parent::init();
+    }
+}
+$m = new Model_Result($db);
+$m->addCondition("player_id", (int)$_REQUEST["player_id"]);
 /*
  * Handle Data request by TimeChart
  * */
 header("Content-type: application/json");
 if (isset($_REQUEST["unit"])){
     $unit = isset($_REQUEST["unit"])?$_REQUEST["unit"]:"d";
-    $from = isset($_REQUEST["from"])?$_REQUEST["from"]:null;
-    $to = isset($_REQUEST["to"])?$_REQUEST["to"]:null;
+    $from = isset($_REQUEST["from"])?(int)$_REQUEST["from"]:null;
+    $to = isset($_REQUEST["to"])?(int)$_REQUEST["to"]:null;
 
-    $a = $m->action('select')->order('dat', 'asc');
-    if ($unit != "d"){
-        $a->field("min(bid) as bid");
-        $a->field("max(ask) as ask");
+    $a = $m->action('select')->order('dts', 'asc');
+    if ($unit != "h"){
+        $a->field("count(win) as cnt");
+        $a->field("sum(win) as win");
     }
     if ($unit == "y"){
-        $a->group($a->expr("date_format(dat, '%Y')"));
+        $a->group($a->expr("date_format(dts, '%Y')"));
     } else if ($unit == "m"){
-        $a->group($a->expr("date_format(dat, '%Y%m')"));
+        $a->group($a->expr("date_format(dts, '%Y%m')"));
+    } else if ($unit == "d"){
+        $a->group($a->expr("date_format(dts, '%Y%m%d')"));
     }
     $r = $a->select();
     foreach ($r as $row){
-        $out[] = [strtotime($row["dat"])*1000, (float)$row["bid"], (float)$row["ask"]];
+        $cnt = ($unit != "h")?(float)$row["cnt"]:1;
+        $coef = (float)$row["win"] / $cnt;
+        $out[] = [(int)strtotime($row["dts"]), (float)$row["win"], $cnt, $coef];
     }
     $response = ["unit" => $unit, "values" => $out, "from" => $from, "to" => $to]; 
     echo json_encode($response);
