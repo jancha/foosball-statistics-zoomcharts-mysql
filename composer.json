@@ -1,7 +1,7 @@
 {
     "name": "jv/mysql-zc-demo",
     "require": {
-        "atk4/data": "dev-feature/implement-expressions"
+        "atk4/data": "dev-master"
     },
     "authors": [
         {
