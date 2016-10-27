@@ -1,6 +1,6 @@
 <?php
-
-include "vendor/autoload.php";
+ini_set("display_errors","on");
+include "vendor" . DIRECTORY_SEPARATOR . "autoload.php";
 include "config.php";
 
 $db = new atk4\data\Persistence_SQL($config["db"]["dsn"], $config["db"]["user"], $config["db"]["pass"]);
@@ -32,6 +32,9 @@ class Model_Game extends atk4\data\Model {
 }
 $m = new Model_Result($db);
 $m->addCondition("player_id", (int)$_REQUEST["player_id"]);
+if (isset($_REQUEST["color"])){
+    $m->addCondition("color", $_REQUEST["color"]);
+}
 /*
  * Handle Data request by TimeChart
  * */
@@ -54,10 +57,11 @@ if (isset($_REQUEST["unit"])){
         $a->group($a->expr("date_format(dts, '%Y%m%d')"));
     }
     $r = $a->select();
+    $out = [];
     foreach ($r as $row){
         $cnt = ($unit != "h")?(float)$row["cnt"]:1;
         $coef = (float)$row["win"] / $cnt;
-        $out[] = [(int)strtotime($row["dts"]), (float)$row["win"], $cnt, $coef];
+        $out[] = [(int)strtotime($row["dts"]), (float)$row["win"], $cnt, $coef, (float)$cnt-$row["win"]];
     }
     $response = ["unit" => $unit, "values" => $out, "from" => $from, "to" => $to]; 
     echo json_encode($response);

@@ -9,48 +9,54 @@
 <div id="c1"></div>
 <div id="c2"></div>
 <div id="c3"></div>
+<div id="c4"></div>
+<div id="c5"></div>
+<div id="c6"></div>
+<div id="c7"></div>
+<div id="c8"></div>
 <script>
-    var d= [];
-    var s1=[], s2=[], s3=[];
+    var d1= [], d2 = [], d3=[];
+    var s1=[], s2=[], s3=[], s4=[],s5=[],s6=[],s7=[],s8=[];
     var names = [null, "Edgars","Jānis", "Kārlis","Valts","Eižens","Andžs"];
     var color = [null, "red","green","blue","black","brown","orange"];
-    var t1,t2,t3;
+    var t1,t2,t3,t4,t5,t6,t7,t8;
+
 
     function sync(ev){
-        if (ev.origin == "user"){
+        if (ev.origin != "data"){
+            // I would like to use ev.origin == "user", but unit change sends
+            // wrong origin :/
             var t = ev.chart.targetTime();
             var du = ev.chart.targetDisplayUnit();
-            if (t1 != ev.chart){
-                t1.time(t[0],t[1]);
-                t1.displayUnit(du);
-            }
-            if (t2 != ev.chart){
-                t2.time(t[0],t[1]);
-                t2.displayUnit(du);
-            }
-            if (t3 != ev.chart){
-                t3.time(t[0],t[1]);
-                t3.displayUnit(du);
-            }
-        } else {
-            var du = ev.chart.targetDisplayUnit();
-            for (var x = 1; x <= 3; x++){
+            for (var x = 1; x <= 4; x++){
                 var c = window["t"+x];
                 if (c != ev.chart){
-                    if (c.displayUnit() != du){
-                        c.displayUnit(du);
-                    }
+                    c.time(t[0],t[1]);
+                    c.displayUnit(du);
                 }
             }
         }
     }
     for (var x = 1; x <= 6; x++){
-        d.push({
+        d1.push({
             id: "d" + x,
             units:["y","m","d"],
             url: "service.php?player_id=" + x,
             timestampInSeconds: true
         });
+        d2.push({
+            id: "d" + x,
+            units:["y","m","d"],
+            url: "service.php?color=red&player_id=" + x,
+            timestampInSeconds: true
+        });
+        d3.push({
+            id: "d" + x,
+            units:["y","m","d"],
+            url: "service.php?color=black&player_id=" + x,
+            timestampInSeconds: true
+        });
+        // win, normal
         s1.push({
                 data: {source: "d" + x, index: 1, aggregation: "sum"},
                 name: names[x],
@@ -59,6 +65,7 @@
                     marker: {shape: "rect", width: 3}}
             }
         );
+        // win, normal, count
         s2.push({
                 data: {source: "d" + x, index: 2, aggregation: "sum"},
                 name: names[x],
@@ -68,6 +75,7 @@
                 }
             }
         );
+        // win, normal, coef
         s3.push({
                 data: {source: "d" + x, index: 3, aggregation: "avg"},
                 name: names[x],
@@ -77,88 +85,94 @@
                 }
             }
         );
+        // lost, normal
+        s4.push({
+                data: {source: "d" + x, index: 4, aggregation: "sum"},
+                name: names[x],
+                type: "line",
+                style: {lineColor: color[x], smoothing: true,
+                    marker: {shape: "rect", width: 3}
+                }
+            }
+        );
+        // win, red, count 
+        s5.push({
+                data: {source: "d" + x, index: 2, aggregation: "sum"},
+                name: names[x],
+                type: "line",
+                style: {lineColor: color[x], smoothing: true,
+                    marker: {shape: "rect", width: 3}
+                }
+            }
+        );
+        // lost, red, count 
+        s6.push({
+                data: {source: "d" + x, index: 4, aggregation: "sum"},
+                name: names[x],
+                type: "line",
+                style: {lineColor: color[x], smoothing: true,
+                    marker: {shape: "rect", width: 3}
+                }
+            }
+        );
+        // win, red, count 
+        s7.push({
+                data: {source: "d" + x, index: 2, aggregation: "sum"},
+                name: names[x],
+                type: "line",
+                style: {lineColor: color[x], smoothing: true,
+                    marker: {shape: "rect", width: 3}
+                }
+            }
+        );
+        // lost, red, count 
+        s8.push({
+                data: {source: "d" + x, index: 4, aggregation: "sum"},
+                name: names[x],
+                type: "line",
+                style: {lineColor: color[x], smoothing: true,
+                    marker: {shape: "rect", width: 3}
+                }
+            }
+        );
     }
-    t1 = new TimeChart({
-        container: document.getElementById("c1"),
-        title: {
-            text: "Coefficient"
-        },
-        data:d,
-        series:s3,
-        valueAxisDefault: {
-            zeroLine: "floating",
-            scaleAdjustmentTolerance: 0.2
-        },
-        area: {
-            displayUnits: [
-                {unit: "1 y", name: "year"},
-                {unit: "1 M", name: "month"},
-                {unit: "1 d", name: "day"}
-            ]
-        },
-        legend: {
-            enabled: true
-        },
-        events: {
-            onChartUpdate: function(ev){
-                sync(ev);
-            }
-        }
-    });
-    t2 = new TimeChart({
-        container: document.getElementById("c2"),
-        title: {
-            text: "Games won"
-        },
-        data:d,
-        series:s2,
-        valueAxisDefault: {
-            zeroLine: "floating",
-            scaleAdjustmentTolerance: 0.2
-        },
-        area: {
-            displayUnits: [
-                {unit: "1 y", name: "year"},
-                {unit: "1 M", name: "month"},
-                {unit: "1 d", name: "day"}
-            ]
-        },
-        legend: {
-            enabled: true
-        },
-        events: {
-            onTimeChange: function(ev){
-                sync(ev);
-            }
-        }
-    });
-    t3 = new TimeChart({
-        container: document.getElementById("c3"),
-        title: {
-            text: "Games played"
-        },
-        data:d,
-        series:s1,
-        valueAxisDefault: {
-            zeroLine: "floating",
-            scaleAdjustmentTolerance: 0.2
-        },
-        area: {
-            displayUnits: [
-                {unit: "1 y", name: "year"},
-                {unit: "1 M", name: "month"},
-                {unit: "1 d", name: "day"}
-            ]
-        },
-        legend: {
-            enabled: true
-        },
-        events: {
-            onTimeChange: function(ev){
-                sync(ev);
-            }
-        }
-    });
+
+    function addTimeChart(d,s,c,t){
+        window["t" + c] = new TimeChart({
+            container: document.getElementById("c" + c),
+            title: {
+                text: t
+            },
+            data:d,
+            series:s,
+            area: {
+                displayUnits: [
+                    {unit: "1 y", name: "year"},
+                    {unit: "1 M", name: "month"},
+                    {unit: "1 d", name: "day"}
+                ]
+            },
+            legend: {
+                enabled: true
+            },
+            events: {
+                onTimeChange: function(ev){
+                    sync(ev);
+                }
+            },
+            navigation: {initialDisplayUnit: "1 M", initialDisplayPeriod: "1 y"},
+            timeAxis: {maxUnitWidth: 2500}
+        });
+    }
+    addTimeChart(d1,s3, 1, "Coefficient");
+    addTimeChart(d1,s1, 2, "Games Won");
+    addTimeChart(d1,s2, 3, "Games Played");
+    addTimeChart(d1,s4, 4, "Games Lost");
+
+    addTimeChart(d2,s5, 5, "Red Won");
+    addTimeChart(d2,s6, 6, "Red Lost");
+    addTimeChart(d3,s7, 7, "Black Won");
+    addTimeChart(d3,s8, 8, "Black Lost");
 
 </script>
 
