@@ -6,6 +6,7 @@
     <script src="//cdn.zoomcharts-cloud.com/1/nightly/zoomcharts.js"></script>
 </head>
 <body>
+    <a href="#" id="post" onclick="post()">Post To SpreadSheet</a>
 <div id="c1"></div>
 <div id="c2"></div>
 <div id="c3"></div>
@@ -15,13 +16,46 @@
 <div id="c7"></div>
 <div id="c8"></div>
 <script>
+
     var d1= [], d2 = [], d3=[];
     var s1=[], s2=[], s3=[], s4=[],s5=[],s6=[],s7=[],s8=[];
     var names = [null, "Edgars","Jānis", "Kārlis","Valts","Eižens","Andžs"];
     var color = [null, "red","green","blue","black","brown","orange"];
     var t1,t2,t3,t4,t5,t6,t7,t8;
+    function post(){
+        /* request raw data, and then send to analytics */
+        var httpRequest;
+        httpRequest = new XMLHttpRequest();
 
+        if (!httpRequest) {
+            alert('Giving up :( Cannot create an XMLHTTP instance');
+            return false;
+        }
+        httpRequest.onreadystatechange = function(){
+            if (httpRequest.readyState === XMLHttpRequest.DONE) {
+                if (httpRequest.status === 200) {
+                    var f= document.createElement("form");
+                    f.method = "post";
+                    f.target = "";
+                    f.action =
+                    "https://apps.zoomcharts.com/spreadsheet-analytics/";
 
+                    var t = document.createElement("textarea");
+                    t.name = "json";
+                    var r = httpRequest.responseText;
+                    r = r.replace(/\</g, '&lt;');
+                    r = r.replace(/\&/g, '&amp;');
+                    t.innerHTML = r;
+                    f.appendChild(t);
+                    f.submit();
+                } else {
+                    alert("Error, cannot get data");
+                }
+            }
+        }
+        httpRequest.open('GET', "load.php");
+        httpRequest.send();
+    }
     function sync(ev){
         if (ev.origin != "data"){
             // I would like to use ev.origin == "user", but unit change sends
@@ -40,19 +74,19 @@
     for (var x = 1; x <= 6; x++){
         d1.push({
             id: "d" + x,
-            units:["y","m","d"],
+            units:["y","m","d","h"],
             url: "service.php?player_id=" + x,
             timestampInSeconds: true
         });
         d2.push({
             id: "d" + x,
-            units:["y","m","d"],
+            units:["y","m","d","h"],
             url: "service.php?color=red&player_id=" + x,
             timestampInSeconds: true
         });
         d3.push({
             id: "d" + x,
-            units:["y","m","d"],
+            units:["y","m","d","h"],
             url: "service.php?color=black&player_id=" + x,
             timestampInSeconds: true
         });
@@ -65,7 +99,7 @@
                     marker: {shape: "rect", width: 3}}
             }
         );
-        // win, normal, count
+        // normal, count
         s2.push({
                 data: {source: "d" + x, index: 2, aggregation: "sum"},
                 name: names[x],
@@ -75,7 +109,7 @@
                 }
             }
         );
-        // win, normal, coef
+        // normal, coef
         s3.push({
                 data: {source: "d" + x, index: 3, aggregation: "avg"},
                 name: names[x],
@@ -95,9 +129,9 @@
                 }
             }
         );
-        // win, red, count 
+        // win, red, sum
         s5.push({
-                data: {source: "d" + x, index: 2, aggregation: "sum"},
+                data: {source: "d" + x, index: 1, aggregation: "sum"},
                 name: names[x],
                 type: "line",
                 style: {lineColor: color[x], smoothing: true,
@@ -115,9 +149,9 @@
                 }
             }
         );
-        // win, red, count 
+        // win, red, sum 
         s7.push({
-                data: {source: "d" + x, index: 2, aggregation: "sum"},
+                data: {source: "d" + x, index: 1, aggregation: "sum"},
                 name: names[x],
                 type: "line",
                 style: {lineColor: color[x], smoothing: true,
@@ -149,7 +183,9 @@
                 displayUnits: [
                     {unit: "1 y", name: "year"},
                     {unit: "1 M", name: "month"},
-                    {unit: "1 d", name: "day"}
+                    {unit: "1 w", name: "week"},
+                    {unit: "1 d", name: "day"},
+                    {unit: "1 h", name: "hour"},
                 ]
             },
             legend: {
@@ -157,12 +193,134 @@
             },
             events: {
                 onTimeChange: function(ev){
-                    sync(ev);
+                    if (window.update_charts){
+                        clearTimeout(window.update_charts);
+                    }
+                    window.update_charts = setTimeout(function(){
+                        sync(ev);
+                    },1500);
                 }
             },
             navigation: {initialDisplayUnit: "1 M", initialDisplayPeriod: "1 y"},
-            timeAxis: {maxUnitWidth: 2500}
+            timeAxis: {maxUnitWidth: 2500},
+            toolbar: {
+                periods: [
+                    {displayAnchor: "newestData",
+                        displayPeriod: "max",
+                        displayUnit: "1 month",
+                        name: "All Data"
+                    },
+                    {displayAnchor: "newestData",
+                        displayPeriod: "3 M",
+                        displayUnit: "1 M",
+                        name: "Last 3 months"
+                    },
+                    {displayAnchor: "newestData",
+                        displayPeriod: "3 w",
+                        displayUnit: "1 w",
+                        name: "Last 4 weeks"
+                    },
+                    {displayAnchor: "now",
+                        displayPeriod: "7 h",
+                        displayUnit: "1 h",
+                        name: "Today"
+                    },
+                ],
+                extraItems: [{
+                    label: "Display Type",
+                    align: "left",
+                    side: "top",
+                    dropDownItems: [
+                        {
+                            label: "Lines",
+                            onClick: function(ev,c){
+                                var s = c.extra.original;
+                                var update = false;
+                                for (var x in s){
+                                    if (s[x].type != "line"){
+                                        s[x].type = "line";
+                                        s[x].style.lineColor=
+                                        s[x].style.fillColor;
+                                        s[x].style.fillColor=null;
+                                        s[x].style.smoothing = true; 
+                                        s[x].style.marker = 
+                                        {shape: "rect", width: 3, fillColor:
+                                            s[x].style.fillColor};
+                                        update = true;
+                                    }
+                                }
+                                if (update){
+                                    c.replaceSettings({series:s});
+                                }
+                            }
+                        },
+                        {
+                            label: "Columns",
+                            onClick: function(ev,c){
+                                var s = c.extra.original;
+                                var update = false;
+                                for (var x in s){
+                                    if (s[x].type != "columns"){
+                                        s[x].type = "columns";
+                                        s[x].style.fillColor =
+                                        s[x].style.lineColor;
+                                        s[x].style.lineColor=null;
+                                        delete s[x].style.marker;
+                                        delete s[x].style.smoothing;
+                                        update = true;
+                                    }
+                                }
+                                if (update){
+                                    c.replaceSettings({series:s});
+                                }
+                            }
+                        }
+                    ]
+                },
+                {
+                    label: "Grouping",
+                    align: "left",
+                    side: "top",
+                    dropDownItems: [
+                        {
+                            label: "Cluster",
+                            onClick: function(ev,c){
+                                var s = c.extra.original;
+                                var update = false;
+                                for (var x in s){
+                                    if (s[x].stack){
+                                        s[x].stack = null;
+                                        update = true;
+                                    }
+                                }
+                                if (update){
+                                    c.replaceSeries(s);
+                                }
+                            }
+                        },
+                        {
+                            label: "Stack",
+                            onClick: function(ev,c){
+                                var s = c.extra.original;
+                                var update = false;
+                                for (var x in s){
+                                    if (s[x].stack != "default"){
+                                        s[x].stack = "default";
+                                        update = true;
+                                    }
+                                }
+                                if (update){
+                                    c.replaceSeries(s);
+                                }
+                            }
+                        }
+                    ]
+                }
+                ]
+            }
         });
+
+        window["t" + c].extra = {original: s, c:c};
     }
     addTimeChart(d1,s3, 1, "Coefficient");
     addTimeChart(d1,s1, 2, "Games Won");

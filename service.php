@@ -45,7 +45,7 @@ if (isset($_REQUEST["unit"])){
     $to = isset($_REQUEST["to"])?(int)$_REQUEST["to"]:null;
 
     $a = $m->action('select')->order('dts', 'asc');
-    if ($unit != "h"){
+    if ($unit != "z"){
         $a->field("count(win) as cnt");
         $a->field("sum(win) as win");
     }
@@ -55,11 +55,13 @@ if (isset($_REQUEST["unit"])){
         $a->group($a->expr("date_format(dts, '%Y%m')"));
     } else if ($unit == "d"){
         $a->group($a->expr("date_format(dts, '%Y%m%d')"));
+    } else if ($unit == "h"){
+        $a->group($a->expr("date_format(dts, '%Y%m%d %h')"));
     }
     $r = $a->select();
     $out = [];
     foreach ($r as $row){
-        $cnt = ($unit != "h")?(float)$row["cnt"]:1;
+        $cnt = ($unit !== "z")?(float)$row["cnt"]:1;
         $coef = (float)$row["win"] / $cnt;
         $out[] = [(int)strtotime($row["dts"]), (float)$row["win"], $cnt, $coef, (float)$cnt-$row["win"]];
     }
