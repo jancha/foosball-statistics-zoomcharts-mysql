@@ -6,7 +6,8 @@
     <script src="//cdn.zoomcharts-cloud.com/1/nightly/zoomcharts.js"></script>
 </head>
 <body>
-    <a href="#" id="post" onclick="post()">Post To SpreadSheet</a>
+    <a href="#" onclick="post('load.php')">Post Results To SpreadSheet</a>
+    <a href="#" onclick="post('load_games.php')">Post Games To SpreadSheet</a>
 <div id="c1"></div>
 <div id="c2"></div>
 <div id="c3"></div>
@@ -22,7 +23,7 @@
     var names = [null, "Edgars","Jānis", "Kārlis","Valts","Eižens","Andžs"];
     var color = [null, "red","green","blue","black","brown","orange"];
     var t1,t2,t3,t4,t5,t6,t7,t8;
-    function post(){
+    function post(service){
         /* request raw data, and then send to analytics */
         var httpRequest;
         httpRequest = new XMLHttpRequest();
@@ -53,7 +54,7 @@
                 }
             }
         }
-        httpRequest.open('GET', "load.php");
+        httpRequest.open('GET', service);
         httpRequest.send();
     }
     function sync(ev){

@@ -16,20 +16,6 @@ class Model_Result extends atk4\data\Model {
         $this->addField("dts");
     }
 }
-class Model_Player extends atk4\data\Model {
-    public $table = "player";
-    function init(){
-        parent::init();
-        $this->addField("name");
-    }
-}
-
-class Model_Game extends atk4\data\Model {
-    public $table = "game";
-    function init(){
-        parent::init();
-    }
-}
 $m = new Model_Result($db);
 $m->addCondition("player_id", (int)$_REQUEST["player_id"]);
 if (isset($_REQUEST["color"])){
