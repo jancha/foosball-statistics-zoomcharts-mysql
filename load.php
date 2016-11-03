@@ -22,6 +22,8 @@ class Model_Result extends atk4\data\Model {
         $this->addField("win");
         $this->addField("color");
         $this->addField("dts");
+        $this->addField("goals");
+        $this->addField("goals_opponent");
     }
 }
 $mp = new Model_Player($db);
